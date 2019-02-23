@@ -2,11 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './App.css';
 
+
 const cheerio = require('cheerio');
 const rp = require('request-promise');
 const Promise = require('bluebird');
 const builder = require('xmlbuilder');
-const parseString = require('xml2js').parseString;
+const FileSaver = require('file-saver');
 
 class App extends React.Component {
 
@@ -42,8 +43,8 @@ class App extends React.Component {
             {version: '1.0', encoding: 'UTF-8', standalone: true},
             {pubID: null, sysID: null},
             {skipNullNodes: false, skipNullAttributes: false, 
-              headless: false, ignoreDecorators: false,
-              separateArrayItems: false, noDoubleEncoding: false,
+              headless: true, ignoreDecorators: false,
+              separateArrayItems: true, noDoubleEncoding: false,
               stringify: {}});
               
           //iterate through each coloumn of customer list (industry)
@@ -81,8 +82,7 @@ class App extends React.Component {
                   if(c.type === 'tag') {
                     // get date or the name of the filtered list as string
                     let cName = c.children[0].data;
-                    let customer = customers.ele('customer');
-                    customer.att('name', cName.trim());
+                    customers.ele('customer', {name: cName.trim()});
                   }
                 }
               }
@@ -96,6 +96,11 @@ class App extends React.Component {
             allowEmpty: true,
             spacebeforeslash: ''
           });
+
+          let blob = new Blob([xmlString], {type: "text/xml;charset=utf-8"});
+          FileSaver.saveAs(blob, "customers.xml");
+
+
           //render dom with new pretty xml string
           ReactDOM.render(xmlString, document.getElementById('root'));
           //rexolve case for promise
